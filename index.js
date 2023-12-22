@@ -1,11 +1,15 @@
 const express = require('express');
-const app = express()
-require('dotenv').config()
 const cors = require('cors');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const app = express()
+require('dotenv').config()
+
 const port = process.env.port || 5000
 
-app.use(cors())
+app.use(cors({
+    origin: ['http://localhost:5173', 'https://task-management-821b9.web.app','https://task-management-821b9.firebaseapp.com'],
+    credentials: true
+}))
 app.use(express.json())
 
 const uri = `mongodb+srv://${process.env.db_user}:${process.env.db_pass}@task-management.e91tehb.mongodb.net/?retryWrites=true&w=majority`;
@@ -42,6 +46,12 @@ async function run() {
             const data= await taskssCollection.find(query).toArray()
             res.send(data)
         })
+        app.get('/taskUpdate/:id',async (req,res)=>{
+            const id= req.params.id
+            const query= {_id: new ObjectId(id)}
+            const result= await taskssCollection.findOne(query)
+            res.send(result)
+        })
         app.put("/updateTask/:id",async (req,res)=>{
             const id= req.params.id
             const status= req.body.status
@@ -62,8 +72,8 @@ async function run() {
             res.send(result)
         })
         // Send a ping to confirm a successful connection
-        await client.db("admin").command({ ping: 1 });
-        console.log("Pinged your deployment. You successfully connected to MongoDB!");
+        // await client.db("admin").command({ ping: 1 });
+        // console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
         // Ensures that the client will close when you finish/error
         //   await client.close();
